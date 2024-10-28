@@ -23,10 +23,10 @@ data class APIInfo(
 
 fun Routing.index() {
     get("/") {
-        val out = APIResult(0, "IAA", APIInfo(
-            version = "1.1.6",
+        val out = APIResult(0, "星月HookQsign-9.1.0", APIInfo(
+            version = "Test",
             appVersion = "${Config.AppVersionName}/${Config.AppVersionCode}",
-            protocol = "v8.9.68",
+            protocol = "v9.1.0",
             pid = android.os.Process.myPid().toUInt()
         ))
         kotlin.runCatching {
