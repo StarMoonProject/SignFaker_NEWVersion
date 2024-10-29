@@ -18,3 +18,28 @@ jobs:
       uses: gradle/gradle-build-action@v2
     - name: Run build with Gradle Wrapper
       run:  gradle build
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: build-output
+        path: build/libs/*.APK # 确保路径与构建输出相符
+
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: 'v1.0.0' # 根据实际情况更改版本号
+        release_name: 'Qsign-9.1.0'
+        draft: false
+        prerelease: false
+    - name: Upload to Release
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: build/libs/*.apk
+        asset_name: qsign.apk # 可以根据实际文件名称更改
+        asset_content_type: application/java-archive
