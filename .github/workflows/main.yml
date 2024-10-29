@@ -1,29 +1,47 @@
-name: Build Gradle project
+# This workflow will build a Java project with Gradle
+# For more information see: https://help.github.com/actions/language-and-framework-guides/building-and-testing-java-with-gradle
+
+name: Java CI with Gradle
 
 on:
-  push:
+    push:
+        branches: [ master ]
+    pull_request:
+        branches: [ master ]
 
 jobs:
-  build-gradle-project:
-    runs-on: ubuntu-latest
-    steps:
-    - name: Set up JDK 17
-      uses: actions/setup-java@v3
-      with:
-          java-version: '17'
-          distribution: 'temurin' # 可以使用 'zulu' 或其他发行版
-    - name: Checkout project sources
-      uses: actions/checkout@v2
-    - name: Setup Gradle
-      uses: gradle/gradle-build-action@v2
-    - name: Run build with Gradle Wrapper
-      run:  gradle :app:assembleRelease
-    - name: Upload Artifact
-      uses: actions/upload-artifact@v3
-      with:
-        name: build-output
-        path: build/libs/*.APK # 确保路径与构建输出相符
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: build/libs/*.apk
-        asset_name: qsign.apk # 可以根据实际文件名称更改
-        asset_content_type: application/java-archive
+    build:
+        name: Gradle Automation Build
+        runs-on: ubuntu-latest
+        strategy:
+            matrix:
+                java: [11, 13]
+        steps:
+            -
+                uses: actions/checkout@v2
+            -
+                uses: actions/setup-java@v1
+                with:
+                    java-version: ${{ matrix.java }}
+
+            # add cache to improve workflow execution time
+            -
+                name: Cache .gradle/caches
+                uses: actions/cache@v1
+                with:
+                    path: ~/.gradle/caches
+                    key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*') }}
+                    restore-keys: ${{ runner.os }}-gradle-
+            -
+                name: Cache .gradle/wrapper
+                uses: actions/cache@v1
+                with:
+                    path: ~/.gradle/wrapper
+                    key: ${{ runner.os }}-gradle-wrapper-${{ hashFiles('**/*.gradle') }}
+                    restore-keys: ${{ runner.os }}-gradle-wrapper-
+            -
+                name: Grant execute permission for gradlew
+                run: chmod +x gradlew
+            -
+                name: Build with Gradle
+                run: gradlew :app:assembleRelease
